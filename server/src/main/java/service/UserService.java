@@ -42,7 +42,7 @@ public class UserService {
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         if (loginRequest.password() == null || loginRequest.username() == null) {
-            throw new DataAccessException(500, "Error: invalid request");
+            throw new DataAccessException(400, "Error: invalid request");
         }
         UserData userData = userAccess.getUser(loginRequest.username());
         if (userData == null) {

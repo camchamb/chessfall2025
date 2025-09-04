@@ -33,13 +33,19 @@ public class Server {
 //            throw new RuntimeException(e);
 //        }
 
-        UserService userService = new UserService(userAccess, authAccess);
-        GameService gameService = new GameService(gameAccess, authAccess);
+        this.userService = new UserService(userAccess, authAccess);
+        this.gameService = new GameService(gameAccess, authAccess);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
-        javalin.post("/user", this::register);
+        javalin.post("/user", this::register)
+                .delete("/db", this::db)
+                .post("/session", this::login)
+                .delete("/session", this::logout)
+                .get("/game", this::listGames)
+                .post("/game", this::createGame)
+                .put("/game", this::joinGame);
 
     }
 
@@ -66,10 +72,82 @@ public class Server {
         }
     }
 
+    private void db(Context context) {
+        try {
+            userService.clear();
+            gameService.clear();
+            context.json("{ }");
+        } catch (DataAccessException ex) {
+            errorHandling(ex, context);
+        }
+    }
+
+    private void login(Context context) {
+        try {
+            var loginRequest = serializer.fromJson(context.body(), LoginRequest.class);
+            LoginResult loginResult = userService.login(loginRequest);
+            context.json(serializer.toJson(loginResult));
+            System.out.println(serializer.toJson(loginResult));
+        }
+        catch (DataAccessException ex) {
+            errorHandling(ex, context);
+        }
+    }
+
+    private void logout(Context context) {
+        try {
+            String authToken = context.header("authorization");
+            userService.logout(new LogoutRequest(authToken));
+            context.json("{ }");
+        }
+        catch (DataAccessException ex) {
+            errorHandling(ex, context);
+        }
+    }
+
+    private void listGames(Context context) {
+        try {
+            String authToken = context.header("authorization");
+            var listGamesRequest = new ListGamesRequest(authToken);
+            ListGamesResult listGamesResult = gameService.listGames(listGamesRequest);
+            context.json(serializer.toJson(listGamesResult));
+            System.out.println(serializer.toJson(listGamesResult));
+        }
+        catch (DataAccessException ex) {
+            errorHandling(ex, context);
+        }
+    }
+
+    private void createGame(Context context) {
+        try {
+            var tempRequest = serializer.fromJson(context.body(), CreateGameRequest.class);
+            var createGameRequest = new CreateGameRequest(tempRequest.gameName(), context.header("authorization"));
+            CreateGameResult createGameResult = gameService.createGame(createGameRequest);
+            context.json(serializer.toJson(createGameResult));
+            System.out.println(serializer.toJson(createGameResult));
+        }
+        catch (DataAccessException ex) {
+            errorHandling(ex, context);
+        }
+    }
+
+    private void joinGame(Context context) {
+        try {
+            var tempRequest = serializer.fromJson(context.body(), JoinGameRequest.class);
+            var joinGameRequest = new JoinGameRequest(tempRequest.playerColor(),
+                    tempRequest.gameID(), context.header("authorization"));
+            gameService.joinGame(joinGameRequest);
+            context.json("{ }");
+        }
+        catch (DataAccessException ex) {
+            errorHandling(ex, context);
+        }
+    }
+
 
     public void errorHandling(DataAccessException ex, Context context) {
-        context.status(HttpStatus.valueOf(ex.getMessage()));
-        String message = "Invalid request";
+        context.status(ex.getStatus());
+        String message = ex.getMessage();
         String json = "{\"message\": \"" + message + "\" }";
         System.out.println(json);
         context.json(json);

@@ -34,6 +34,9 @@ public class GameService {
         if (createGameRequest.authToken() == null) {
             throw new DataAccessException(400, "Error: invalid request");
         }
+        if (createGameRequest.gameName() == null) {
+            throw new DataAccessException(400, "Error: invalid request");
+        }
         var authData = authAccess.getAuth(createGameRequest.authToken());
         if (authData == null) {
             throw new DataAccessException(401, "Error: unauthorized");
