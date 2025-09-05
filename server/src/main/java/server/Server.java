@@ -9,6 +9,8 @@ import io.javalin.http.HttpStatus;
 import service.*;
 import service.requests.*;
 
+import java.util.Map;
+
 
 public class Server {
 
@@ -23,15 +25,16 @@ public class Server {
 
     public Server() {
         try {
-            userAccess = new UserMemoryAccess();
-            gameAccess = new GameMemoryAccess();
-            authAccess = new AuthMemoryAccess();
-        } catch (Exception e) {
+            userAccess = new UserSqlAccess();
+            gameAccess = new GameSqlAccess();
+            authAccess = new AuthSqlAccess();
+        }  catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-//        } catch (DataAccessException e) {
-//            throw new RuntimeException(e);
-//        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
 
         this.userService = new UserService(userAccess, authAccess);
         this.gameService = new GameService(gameAccess, authAccess);
@@ -45,7 +48,8 @@ public class Server {
                 .delete("/session", this::logout)
                 .get("/game", this::listGames)
                 .post("/game", this::createGame)
-                .put("/game", this::joinGame);
+                .put("/game", this::joinGame)
+                .exception(Exception.class, this::exceptionHandler);
 
     }
 
@@ -142,6 +146,12 @@ public class Server {
         catch (DataAccessException ex) {
             errorHandling(ex, context);
         }
+    }
+
+    private void exceptionHandler(Exception e, Context context) {
+        var body = new Gson().toJson(Map.of("message", String.format("Error: %s", e.getMessage()), "success", false));
+        context.status(500);
+        context.json(body);
     }
 
 
