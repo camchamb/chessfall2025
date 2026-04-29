@@ -5,9 +5,11 @@ import io.javalin.*;
 import com.google.gson.Gson;
 import io.javalin.http.Context;
 
-import io.javalin.http.HttpStatus;
+import requests.*;
+import server.websocket.WebSocketHandler;
 import service.*;
-import service.requests.*;
+import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import java.util.Map;
 
@@ -22,12 +24,14 @@ public class Server {
     UserService userService;
     GameService gameService;
     Gson serializer = new Gson();
+    WebSocketHandler webSocketHandler;
 
     public Server() {
         try {
             userAccess = new UserSqlAccess();
             gameAccess = new GameSqlAccess();
             authAccess = new AuthSqlAccess();
+            webSocketHandler = new WebSocketHandler(userAccess, gameAccess, authAccess);
         }  catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -49,7 +53,12 @@ public class Server {
                 .get("/game", this::listGames)
                 .post("/game", this::createGame)
                 .put("/game", this::joinGame)
-                .exception(Exception.class, this::exceptionHandler);
+                .exception(Exception.class, this::exceptionHandler)
+                .ws("/ws", ws -> {
+                    ws.onConnect(webSocketHandler);
+                    ws.onMessage(webSocketHandler);
+                    ws.onClose(webSocketHandler);
+                });
 
     }
 

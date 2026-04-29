@@ -1,11 +1,11 @@
 package service;
 
 import dataaccess.*;
-import model.AuthData;
-import model.UserData;
+import data.AuthData;
+import data.UserData;
 //import org.mindrot.*
 import org.mindrot.jbcrypt.BCrypt;
-import service.requests.*;
+import requests.*;
 
 import java.util.UUID;
 

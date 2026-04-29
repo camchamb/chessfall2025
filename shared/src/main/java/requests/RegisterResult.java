@@ -1,3 +1,3 @@
-package service.requests;
+package requests;
 
 public record RegisterResult (String username, String authToken) {}

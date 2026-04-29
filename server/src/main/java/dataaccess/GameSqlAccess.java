@@ -2,17 +2,10 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import model.AuthData;
-import model.GameData;
-import service.requests.RegisterRequest;
+import data.GameData;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
 
 public class GameSqlAccess implements GameDAO {
     private final Gson serializer = new Gson();

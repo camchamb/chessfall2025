@@ -1,8 +1,8 @@
 package service;
 
 import dataaccess.*;
-import model.GameData;
-import service.requests.*;
+import data.GameData;
+import requests.*;
 
 
 public class GameService {

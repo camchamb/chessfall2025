@@ -1,6 +1,6 @@
 package dataaccess;
 
-import model.AuthData;
+import data.AuthData;
 
 import java.util.HashMap;
 

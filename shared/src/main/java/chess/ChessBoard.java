@@ -17,6 +17,9 @@ public class ChessBoard implements Cloneable {
     private ChessPosition whiteKing = null;
     private ChessPosition blackKing = null;
 
+    public ChessBoard() {
+    }
+
     public ChessPosition getWhiteKing() {
         return whiteKing;
     }
@@ -35,20 +38,6 @@ public class ChessBoard implements Cloneable {
 
     public void setBoard(ChessPiece[][] board) {
         this.board = board.clone();
-    }
-
-
-    public ChessBoard() {
-    }
-
-    @Override
-    public String toString() {
-        var builder = new StringBuilder();
-        for (var item : board) {
-            builder.append(Arrays.toString(item));
-            builder.append(", ");
-        }
-        return builder.toString();
     }
 
     @Override
@@ -126,4 +115,10 @@ public class ChessBoard implements Cloneable {
     }
 
 
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "board=" + Arrays.deepToString(board) +
+                '}';
+    }
 }
